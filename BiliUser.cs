@@ -48,6 +48,7 @@ namespace BiliApi
         /// <param name="rank"></param>
         public BiliUser(int uid, string name, string sex, string sign, bool fans_badge, int coins, string face, int level, int rank, ThirdPartAPIs sess)
         {
+            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             this.uid = uid;
             this.name = name;
             this.sex = sex;
@@ -72,6 +73,7 @@ namespace BiliApi
         /// <param name="uid"></param>
         public BiliUser(int uid, ThirdPartAPIs sess, bool nocache = false)
         {
+            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             try
             {
                 this.sess = sess;
@@ -104,6 +106,7 @@ namespace BiliApi
         /// <param name="json"></param>
         public BiliUser(string json)
         {
+            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             raw_json = (JObject)JsonConvert.DeserializeObject(json);
             if (raw_json["data"] == null)
             {
@@ -142,6 +145,7 @@ namespace BiliApi
         /// <param name="json"></param>
         public BiliUser(JObject json)
         {
+            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             raw_json = json;
             uid = int.Parse(raw_json["data"]["mid"].ToString());
             name = raw_json["data"]["name"].ToString();
