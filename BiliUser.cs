@@ -9,6 +9,18 @@ namespace BiliApi
     /// </summary>
     public class BiliUser
     {
+        public struct OfficialInfo
+        {
+            public string Title, Description;
+            public int Role;
+            public OfficialType Type;
+        }
+
+        public enum OfficialType
+        {
+            NotVerified = -1, Individual = 0, Organization = 1
+        }
+
         public static Dictionary<int, BiliUser> userlist = new Dictionary<int, BiliUser>();
         public int uid { get; private set; }
         public string name { get; private set; }
@@ -20,6 +32,7 @@ namespace BiliApi
         public int level { get; private set; }
         public int rank { get; private set; }
         public int fans { get; private set; }
+        public OfficialInfo official { get; private set; }
         public JObject raw_json { get; private set; }
         private ThirdPartAPIs sess;
 
@@ -46,7 +59,7 @@ namespace BiliApi
         /// <param name="face"></param>
         /// <param name="level"></param>
         /// <param name="rank"></param>
-        public BiliUser(int uid, string name, string sex, string sign, bool fans_badge, int coins, string face, int level, int rank, ThirdPartAPIs sess)
+        public BiliUser(int uid, string name, string sex, string sign, bool fans_badge, int coins, string face, int level, int rank, OfficialInfo official, ThirdPartAPIs sess)
         {
             if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             this.uid = uid;
@@ -58,6 +71,7 @@ namespace BiliApi
             this.face = face;
             this.level = level;
             this.rank = rank;
+            this.official = official;
             if (userlist.ContainsKey(uid))
             {
                 userlist.Remove(uid);
@@ -68,7 +82,7 @@ namespace BiliApi
 
         /// <summary>
         /// 从UID创建数据
-        /// 系统会自己去抓数据
+        /// <para>系统会自己去抓数据</para>
         /// </summary>
         /// <param name="uid"></param>
         public BiliUser(int uid, ThirdPartAPIs sess, bool nocache = false)
@@ -87,6 +101,13 @@ namespace BiliApi
                 coins = int.Parse(raw_json["data"]["coins"].ToString());
                 face = raw_json["data"]["face"].ToString();
                 fans_badge = raw_json["data"]["fans_badge"].ToString() != "false";
+                official = new OfficialInfo()
+                {
+                    Type = (OfficialType)raw_json["official"].Value<int>("type"),
+                    Title = raw_json["official"].Value<string>("title"),
+                    Description = raw_json["official"].Value<string>("desc"),
+                    Role = raw_json["official"].Value<int>("role")
+                };
             }
             catch
             {
@@ -118,6 +139,11 @@ namespace BiliApi
                 level = int.Parse(raw_json["level_info"]["current_level"].ToString());
                 face = raw_json["face"].ToString();
                 fans = raw_json.Value<int>("fans");
+                official = new OfficialInfo()
+                {
+                    Type = (OfficialType)raw_json["official"].Value<int>("type"),
+                    Title = raw_json["official"].Value<string>("title")
+                };
             }
             else
             {
@@ -130,6 +156,11 @@ namespace BiliApi
                 coins = int.Parse(raw_json["data"]["coins"].ToString());
                 face = raw_json["data"]["face"].ToString();
                 fans_badge = raw_json["data"]["fans_badge"].ToString() != "false";
+                official = new OfficialInfo()
+                {
+                    Type = (OfficialType)raw_json["data"]["official"].Value<int>("type"),
+                    Title = raw_json["data"]["official"].Value<string>("title")
+                };
             }
             if (userlist.ContainsKey(uid))
             {

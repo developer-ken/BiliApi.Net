@@ -102,6 +102,7 @@ namespace BiliApi
                                 j["desc"]["user_profile"]["info"].Value<string>("face"),
                                 j["desc"]["user_profile"]["level_info"].Value<int>("current_level"),
                                 0,
+                                new BiliUser.OfficialInfo(),
                                 sess);
                         }
                         else//如果没有信息就从缓存抓取
