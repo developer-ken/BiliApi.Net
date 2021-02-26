@@ -46,6 +46,77 @@ namespace BiliApi
             return retString;
         }
 
+        public static string PostFile(string url, string refernorigin, byte[] filecontent, string filefieldname, string filetype, string filename, Dictionary<string, string> PostInfo = null, CookieCollection cookies = null)
+        {
+            //上传文件以及相关参数
+            //POST请求分隔符，可任意定制
+            string Boundary = "----WebKitFormBoundarySKNbhflQaXvVSUIb";
+
+
+            //构造POST请求体
+            StringBuilder PostContent = new StringBuilder("\r\n--" + Boundary);
+            byte[] ContentEnd = Encoding.UTF8.GetBytes("--\r\n");//请求体末尾，后面会用到
+                                                                                   //组成普通参数信息
+            foreach (KeyValuePair<string, string> item in PostInfo)
+            {
+                PostContent.Append("\r\n")
+                        .Append("Content-Disposition: form-data; name=\"")
+                        .Append(item.Key + "\"").Append("\r\n")
+                        .Append("\r\n").Append(item.Value).Append("\r\n")
+                        .Append("--").Append(Boundary);
+            }
+            //转换为二进制数组，后面会用到
+            byte[] PostContentByte = Encoding.UTF8.GetBytes(PostContent.ToString());
+
+            //文件信息
+            byte[] UpdateFile = filecontent;//二进制
+            StringBuilder FileContent = new StringBuilder();
+            FileContent.Append("--").Append(Boundary).Append("\r\n")
+                    .Append("Content-Disposition:form-data; name=\"" + filefieldname + "\"; ")
+                    .Append("filename=\"")
+                    .Append(filename + "\"")
+                    .Append("\r\n")
+                    .Append("Content-Type:")
+                    .Append(filetype)
+                    .Append("\r\n\r\n");
+            byte[] FileContentByte = Encoding.UTF8.GetBytes(FileContent.ToString());
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            //request.Proxy = new WebProxy("http://127.0.0.1:8888", false) ;
+            request.Method = "POST";
+            request.Timeout = 20000;
+            request.CookieContainer = ToContainer(cookies);
+            request.Referer = refernorigin;
+            request.Headers.Add("origin", refernorigin);
+            //这里确定了分隔符是什么
+            request.ContentType = "multipart/form-data;boundary=" + Boundary;
+            request.ContentLength = PostContentByte.Length + FileContentByte.Length + UpdateFile.Length + ContentEnd.Length;
+
+            //定义请求流
+            Stream myRequestStream = request.GetRequestStream();
+            myRequestStream.Write(FileContentByte, 0, FileContentByte.Length);//写入文件信息
+            myRequestStream.Write(UpdateFile, 0, UpdateFile.Length);//文件写入请求流中
+            myRequestStream.Write(PostContentByte, 0, PostContentByte.Length);//写入参数
+            myRequestStream.Write(ContentEnd, 0, ContentEnd.Length);//写入结尾                
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            //获取返回值
+            Stream myResponseStream = response.GetResponseStream();
+            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
+
+            string retString = myStreamReader.ReadToEnd();
+            myRequestStream.Close();
+            myStreamReader.Close();
+            myResponseStream.Close();
+            return retString;
+        }
+
+        public string PostFile(string url, string refernorigin, byte[] filecontent, string filefieldname, string filetype, string filename, Dictionary<string, string> PostInfo = null)
+        {
+            return PostFile(url, refernorigin, filecontent, filefieldname, filetype, filename, PostInfo, CookieContext);
+        }
+
         public static ResultWithCookie _post_cookies(string url, Dictionary<string, string> form_data = null)
         {
             if (form_data == null) form_data = new Dictionary<string, string>();
@@ -157,7 +228,7 @@ namespace BiliApi
 
         public static string _post_with_cookies_and_refer(string url, Dictionary<string, string> form_data, string refer, CookieCollection cookies)
         {
-            string retString="";
+            string retString = "";
             foreach (KeyValuePair<string, string> fd in form_data)
             {
                 retString += "&" + HttpUtility.UrlEncode(fd.Key) + "=" + HttpUtility.UrlEncode(fd.Value);
@@ -188,7 +259,7 @@ namespace BiliApi
 
         public static string _post_with_cookies(string url, Dictionary<string, string> form_data, CookieCollection cookies)
         {
-            string retString="";
+            string retString = "";
             foreach (KeyValuePair<string, string> fd in form_data)
             {
                 retString += "&" + HttpUtility.UrlEncode(fd.Key) + "=" + HttpUtility.UrlEncode(fd.Value);

@@ -103,10 +103,10 @@ namespace BiliApi
                 fans_badge = raw_json["data"]["fans_badge"].ToString() != "false";
                 official = new OfficialInfo()
                 {
-                    Type = (OfficialType)raw_json["official"].Value<int>("type"),
-                    Title = raw_json["official"].Value<string>("title"),
-                    Description = raw_json["official"].Value<string>("desc"),
-                    Role = raw_json["official"].Value<int>("role")
+                    Type = (OfficialType)raw_json["data"]["official"].Value<int>("type"),
+                    Title = raw_json["data"]["official"].Value<string>("title"),
+                    Description = raw_json["data"]["official"].Value<string>("desc"),
+                    Role = raw_json["data"]["official"].Value<int>("role")
                 };
             }
             catch
@@ -139,11 +139,26 @@ namespace BiliApi
                 level = int.Parse(raw_json["level_info"]["current_level"].ToString());
                 face = raw_json["face"].ToString();
                 fans = raw_json.Value<int>("fans");
-                official = new OfficialInfo()
+                try
                 {
-                    Type = (OfficialType)raw_json["official"].Value<int>("type"),
-                    Title = raw_json["official"].Value<string>("title")
-                };
+                    official = new OfficialInfo()
+                    {
+                        Type = (OfficialType)raw_json["official"].Value<int>("type"),
+                        Title = raw_json["official"].Value<string>("title"),
+                        Role = raw_json["official"].Value<int>("role"),
+                        Description = raw_json["official"].Value<string>("desc")
+                    };
+                }
+                catch
+                {
+                    official = new OfficialInfo()
+                    {
+                        Type = (OfficialType)raw_json["Official"].Value<int>("type"),
+                        Title = raw_json["Official"].Value<string>("title"),
+                        Role = raw_json["Official"].Value<int>("role"),
+                        Description = raw_json["Official"].Value<string>("desc")
+                    };
+                }
             }
             else
             {
@@ -156,11 +171,26 @@ namespace BiliApi
                 coins = int.Parse(raw_json["data"]["coins"].ToString());
                 face = raw_json["data"]["face"].ToString();
                 fans_badge = raw_json["data"]["fans_badge"].ToString() != "false";
-                official = new OfficialInfo()
+                try
                 {
-                    Type = (OfficialType)raw_json["data"]["official"].Value<int>("type"),
-                    Title = raw_json["data"]["official"].Value<string>("title")
-                };
+                    official = new OfficialInfo()
+                    {
+                        Type = (OfficialType)raw_json["data"]["official"].Value<int>("type"),
+                        Title = raw_json["data"]["official"].Value<string>("title"),
+                        Role = raw_json["data"]["official"].Value<int>("role"),
+                        Description = raw_json["data"]["official"].Value<string>("desc")
+                    };
+                }
+                catch
+                {
+                    official = new OfficialInfo()
+                    {
+                        Type = (OfficialType)raw_json["data"]["Official"].Value<int>("type"),
+                        Title = raw_json["data"]["Official"].Value<string>("title"),
+                        Role = raw_json["data"]["Official"].Value<int>("role"),
+                        Description = raw_json["data"]["Official"].Value<string>("desc")
+                    };
+                }
             }
             if (userlist.ContainsKey(uid))
             {

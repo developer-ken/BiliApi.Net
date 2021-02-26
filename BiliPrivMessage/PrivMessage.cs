@@ -21,14 +21,21 @@ namespace BiliApi.BiliPrivMessage
             msg_seqno = json.Value<int>("msg_seqno");
             msg_key = json.Value<long>("msg_key");
             object jobjdes = JsonConvert.DeserializeObject(json.Value<string>("content"));
-            if (jobjdes.GetType() != json.GetType())
+            try
+            {
+                if (jobjdes.GetType() != json.GetType())
+                {
+                    content = jobjdes.ToString();
+                }
+                else
+                {
+                    content_json = (JObject)jobjdes;
+                    content = content_json.Value<string>("content");
+                }
+            }
+            catch
             {
                 content = jobjdes.ToString();
-            }
-            else
-            {
-                content_json = (JObject)jobjdes;
-                content = content_json.Value<string>("content");
             }
         }
 

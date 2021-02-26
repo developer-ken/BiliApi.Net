@@ -2,6 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -154,6 +157,68 @@ namespace BiliApi.BiliPrivMessage
 
             JObject raw_json = (JObject)JsonConvert.DeserializeObject(response);
             return raw_json.Value<int>("code") == 0;
+        }
+
+        public bool sendMessage(JObject job)
+        {
+            //https://api.vc.bilibili.com/web_im/v1/web_im/send_msg
+            Dictionary<string, string> kvs = new Dictionary<string, string>();
+            CookieCollection ck = sess.CookieContext;
+            kvs.Add("msg[sender_uid]", ck["DedeUserID"].Value);
+            kvs.Add("msg[receiver_id]", talker_id.ToString());
+            kvs.Add("msg[receiver_type]", "1");
+            kvs.Add("msg[msg_type]", "2");
+            kvs.Add("msg[msg_status]", "0");
+            kvs.Add("msg[content]", job.ToString());
+            kvs.Add("msg[new_face_version]", "0");
+            kvs.Add("msg[timestamp]", TimestampHandler.GetTimeStamp(DateTime.Now).ToString());
+            kvs.Add("msg[dev_id]", "A8DF21F2-98F7-43A6-9EB4-E348F9B41EBC");//暂时不知道如何生成，但该项似乎不影响私信的发送
+            kvs.Add("build", "0");
+            kvs.Add("mobi_app", "web");
+            kvs.Add("csrf_token", ck["bili_jct"].Value);
+            kvs.Add("from_firework", "0");
+            kvs.Add("csrf", ck["bili_jct"].Value);
+            string response = sess._post_with_cookies("https://api.vc.bilibili.com/web_im/v1/web_im/send_msg", kvs);
+            if (response == "")
+            {
+                return false;
+            }
+
+            JObject raw_json = (JObject)JsonConvert.DeserializeObject(response);
+            return raw_json.Value<int>("code") == 0;
+        }
+
+        public bool SendImage(Bitmap bmap)
+        {
+            //上传图片
+            MemoryStream ms = new MemoryStream();
+            bmap.Save(ms, ImageFormat.Png);
+            var upload = sess.PostFile(
+                "https://api.vc.bilibili.com/api/v1/drawImage/upload",
+                "https://message.bilibili.com",
+                ms.ToArray(),
+                "file_up",
+                "image/png",
+                "picturen.png",
+                new Dictionary<string, string>()
+                {
+                    {"biz","draw"},
+                    {"category","daily"},
+                    {"build","0"},
+                    {"mobi_app","web"}
+                }
+                );
+            JObject jb = JObject.Parse(upload);
+            if (jb.Value<int>("code") != 0) throw new Exceptions.ApiRemoteException(jb);
+
+            JObject payload = new JObject();
+            payload.Add("url", jb["data"]["image_url"]);
+            payload.Add("width", jb["data"]["image_width"]);
+            payload.Add("height", jb["data"]["image_height"]);
+            payload.Add("imageType", "png");
+            payload.Add("original", "1");
+            payload.Add("size", ms.ToArray().Length / 1024);
+            return sendMessage(payload);
         }
 
         public List<PrivMessage> pick_latest_messages()
