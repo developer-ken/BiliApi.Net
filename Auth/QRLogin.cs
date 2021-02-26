@@ -13,6 +13,7 @@ namespace BiliApi.Auth
     /// <summary>
     /// Bilibili扫码登陆工具类
     /// </summary>
+    [Serializable]
     public class QRLogin : IAuthBase
     {
         const string URL_GETKEY = "https://passport.bilibili.com/qrcode/getLoginUrl";
@@ -22,11 +23,13 @@ namespace BiliApi.Auth
         public LoginQRCode QRToken { private set; get; }
         public bool LoggedIn { get; private set; }
 
+        [Serializable]
         public struct LoginQRCode
         {
             public string ScanUrl, OAuthKey;
         }
 
+        [Serializable]
         public enum QRState
         {
             /// <summary>
