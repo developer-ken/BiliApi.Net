@@ -59,6 +59,11 @@ namespace BiliApi.Auth
             LoggedIn = false;
         }
 
+        public void RefreshQRCode()
+        {
+            QRToken = GetNewQRItem();
+        }
+
         /// <summary>
         /// 等待用户扫码并在完成后返回登录Cookie
         /// </summary>
