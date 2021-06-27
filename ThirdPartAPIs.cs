@@ -56,7 +56,7 @@ namespace BiliApi
             //构造POST请求体
             StringBuilder PostContent = new StringBuilder("\r\n--" + Boundary);
             byte[] ContentEnd = Encoding.UTF8.GetBytes("--\r\n");//请求体末尾，后面会用到
-                                                                                   //组成普通参数信息
+                                                                 //组成普通参数信息
             foreach (KeyValuePair<string, string> item in PostInfo)
             {
                 PostContent.Append("\r\n")
@@ -366,6 +366,23 @@ namespace BiliApi
             //https://api.bilibili.com/x/relation/stat?vmid=5659864
             string url = "https://api.bilibili.com/x/relation/stat?vmid=" + uid;
             return _get_with_cookies_and_refer(url, "https://space.bilibili.com/" + uid + "/fans/fans");
+        }
+
+        public string getCurrentUserDataStr()
+        {
+            string url = "https://api.bilibili.com/x/web-interface/nav";
+            return _get_with_cookies_and_refer(url, "https://www.bilibili.com/");
+        }
+
+        public int getCurrentUserId()
+        {
+            JObject jb = JObject.Parse(getCurrentUserDataStr());
+            return jb["data"].Value<int>("mid");
+        }
+
+        public BiliUser getCurrentUserData()
+        {
+            return new BiliUser(getCurrentUserId(), this);
         }
 
         public string getFanList(int uid, int pageno = 1, int pagesize = 5)

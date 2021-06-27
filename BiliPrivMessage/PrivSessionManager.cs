@@ -15,6 +15,7 @@ namespace BiliApi.BiliPrivMessage
         public ThirdPartAPIs sess;
         public long last_refresh = 0;
         public string lastjson;
+        public readonly long MyUID;
 
         /// <summary>
         /// 会话管理器
@@ -25,6 +26,7 @@ namespace BiliApi.BiliPrivMessage
             followed_sessions = new List<PrivMessageSession>();
             unfollowed_sessions = new List<PrivMessageSession>();
             group_sessions = new List<PrivMessageSession>();
+            MyUID = sess.getCurrentUserId();
         }
         public PrivSessionManager(ThirdPartAPIs sess)
         {
