@@ -34,6 +34,7 @@ namespace BiliApi.BiliPrivMessage
             followed_sessions = new List<PrivMessageSession>();
             unfollowed_sessions = new List<PrivMessageSession>();
             group_sessions = new List<PrivMessageSession>();
+            MyUID = sess.getCurrentUserId();
         }
 
         public void refresh()

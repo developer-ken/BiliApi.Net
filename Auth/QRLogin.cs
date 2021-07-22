@@ -13,7 +13,6 @@ namespace BiliApi.Auth
     /// <summary>
     /// Bilibili扫码登陆工具类
     /// </summary>
-    [Serializable]
     public class QRLogin : IAuthBase
     {
         const string URL_GETKEY = "https://passport.bilibili.com/qrcode/getLoginUrl";
@@ -23,13 +22,11 @@ namespace BiliApi.Auth
         public LoginQRCode QRToken { private set; get; }
         public bool LoggedIn { get; private set; }
 
-        [Serializable]
         public struct LoginQRCode
         {
             public string ScanUrl, OAuthKey;
         }
 
-        [Serializable]
         public enum QRState
         {
             /// <summary>
@@ -50,6 +47,21 @@ namespace BiliApi.Auth
             Expired = -2
         }
 
+        public string Serilize()
+        {
+            JArray jb = new JArray();
+            foreach (Cookie c in Cookies)
+            {
+                JObject j = new JObject();
+                j.Add("k", c.Name);
+                j.Add("v", c.Value);
+                j.Add("d", c.Domain);
+                j.Add("p", c.Path);
+                jb.Add(j);
+            }
+            return jb.ToString();
+        }
+
         public QRLogin()
         {
             QRToken = GetNewQRItem();
@@ -60,6 +72,19 @@ namespace BiliApi.Auth
         {
             QRToken = code;
             LoggedIn = false;
+        }
+
+        public QRLogin(string serilizedJson)
+        {
+            JArray ja = JArray.Parse(serilizedJson);
+            Cookies = new CookieCollection();
+            foreach (JObject jb in ja)
+            {
+                Cookies.Add(new Cookie(
+                    jb.Value<string>("k"), jb.Value<string>("v"), jb.Value<string>("p"), jb.Value<string>("d")
+                    ));
+            }
+            LoggedIn = IsOnline();
         }
 
         public void RefreshQRCode()
