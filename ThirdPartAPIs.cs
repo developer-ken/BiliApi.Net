@@ -341,7 +341,7 @@ namespace BiliApi
             return ck;
         }
 
-        public string GetCrsf()
+        public string GetCsrf()
         {
             foreach (Cookie c in CookieContext)
             {
@@ -453,8 +453,8 @@ namespace BiliApi
                 { "roomid", roomid.ToString() },
                 { "block_uid", uid.ToString() },
                 { "hour", len.ToString() },
-                { "csrf", GetCrsf() },
-                { "csrf_token", GetCrsf() }
+                { "csrf", GetCsrf() },
+                { "csrf_token", GetCsrf() }
             };
             return _post_with_manacookies_and_refer(url, "https://live.bilibili.com/" + roomid, form);
         }
@@ -467,8 +467,8 @@ namespace BiliApi
             {
                 { "roomid", roomid.ToString() },
                 { "id", bid.ToString() },
-                { "csrf", GetCrsf() },
-                { "csrf_token", GetCrsf() }
+                { "csrf", GetCsrf() },
+                { "csrf_token", GetCsrf() }
             };
             return _post_with_manacookies_and_refer(url, "https://live.bilibili.com/" + roomid, form);
         }

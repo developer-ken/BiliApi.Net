@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using BiliApi.Auth;
 using BiliApi.Exceptions;
+using System.Threading;
 
 namespace BiliApi.BiliPrivMessage
 {
@@ -74,43 +75,51 @@ namespace BiliApi.BiliPrivMessage
                 throw new ApiRemoteException(raw_json);
             }
             List<PrivMessageSession> sessionlist = new List<PrivMessageSession>();
-            foreach (JToken jobj in raw_json["data"]["session_list"])
-            {
-                PrivMessageSession session = new PrivMessageSession(jobj, sess);
-                if (session.followed)
-                {
-                    if (!followed_sessions.Contains(session))
+            lock (followed_sessions)
+                lock (unfollowed_sessions)
+                    lock (group_sessions)
                     {
-                        followed_sessions.Add(session);
+                        followed_sessions.Clear();
+                        unfollowed_sessions.Clear();
+                        group_sessions.Clear();
+                        foreach (JToken jobj in raw_json["data"]["session_list"])
+                        {
+                            PrivMessageSession session = new PrivMessageSession(jobj, sess);
+                            if (session.followed)
+                            {
+                                if (!followed_sessions.Contains(session))
+                                {
+                                    followed_sessions.Add(session);
+                                }
+                                else
+                                {
+                                    followed_sessions[followed_sessions.IndexOf(session)].updateFromJson(jobj);
+                                }
+                            }
+                            else if (!session.isGroup)
+                            {
+                                if (!unfollowed_sessions.Contains(session))
+                                {
+                                    unfollowed_sessions.Add(session);
+                                }
+                                else
+                                {
+                                    unfollowed_sessions[unfollowed_sessions.IndexOf(session)].updateFromJson(jobj);
+                                }
+                            }
+                            else
+                            {
+                                if (!group_sessions.Contains(session))
+                                {
+                                    group_sessions.Add(session);
+                                }
+                                else
+                                {
+                                    group_sessions[group_sessions.IndexOf(session)].updateFromJson(jobj);
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        followed_sessions[followed_sessions.IndexOf(session)].updateFromJson(jobj);
-                    }
-                }
-                else if (!session.isGroup)
-                {
-                    if (!unfollowed_sessions.Contains(session))
-                    {
-                        unfollowed_sessions.Add(session);
-                    }
-                    else
-                    {
-                        unfollowed_sessions[unfollowed_sessions.IndexOf(session)].updateFromJson(jobj);
-                    }
-                }
-                else
-                {
-                    if (!group_sessions.Contains(session))
-                    {
-                        group_sessions.Add(session);
-                    }
-                    else
-                    {
-                        group_sessions[group_sessions.IndexOf(session)].updateFromJson(jobj);
-                    }
-                }
-            }
             last_refresh = TimestampHandler.GetTimeStamp16(DateTime.Now);
         }
 

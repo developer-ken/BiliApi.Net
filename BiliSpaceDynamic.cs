@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace BiliApi
 {
@@ -108,13 +109,13 @@ namespace BiliApi
                         else//如果没有信息就从缓存抓取
                         if (BiliUser.userlist.ContainsKey(j["desc"]["user_profile"]["info"].Value<int>("uid")))
                         {
-                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<int>("uid"),sess);
+                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<int>("uid"), sess);
                             //使用用户数据缓存来提高速度
                             //因为监听的是同一个账号，所以缓存命中率超高
                         }
                         else//如果缓存未命中，就拿获得的UID抓取剩余信息
                         {
-                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<int>("uid"),sess);
+                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<int>("uid"), sess);
                         }
 
                         if (j["desc"]["orig_type"] != null)
@@ -194,7 +195,7 @@ namespace BiliApi
             {
                 throw;
             }
-            catch(Exception err)
+            catch (Exception err)
             {
                 throw new UnexpectedResultException(jstring, err);
             }
@@ -220,6 +221,70 @@ namespace BiliApi
                 checked_ids.Add(dync.dynid);
             }
             return latese;
+        }
+
+        public List<ShareCard> GetAllDynCardShares(Dyncard card, out int count, string offset = "")
+        {
+            var id = card.dynid;
+            string url = @"https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/repost_detail?dynamic_id=" + id +
+                (offset.Length > 1 ? ("&offset=" + offset) : "");
+            string jstr = sess._get_with_cookies(url);
+            JObject jb = JObject.Parse(jstr);
+            List<ShareCard> dyn = new List<ShareCard>();
+            foreach (JObject j in (JArray)jb["data"]["items"])
+            {
+                dyn.Add(
+                        new ShareCard
+                        {
+                            Uid = j["desc"].Value<int>("uid"),
+                            UName = j["desc"]["user_profile"]["info"].Value<string>("uname"),
+                            UFace = j["desc"]["user_profile"]["info"].Value<string>("face"),
+                            Content = GetShareTextContent(j.Value<string>("card"))
+                        }
+                    );
+            }
+            bool hasmore = jb["data"].Value<bool>("has_more");
+            if (hasmore)
+            {
+                var offs = jb["data"].Value<string>("offset");
+                dyn.AddRange(GetAllDynCardShares(card, out _, offs));
+            }
+            count = jb["data"].Value<int>("total");
+            return dyn;
+        }
+
+        public static List<ShareCard> GetPageDynCardShares(long id, out int count, ref string offset,out bool more)
+        {
+            string url = @"https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/repost_detail?dynamic_id=" + id +
+                (offset.Length > 1 ? ("&offset=" + offset) : "");
+            string jstr = ThirdPartAPIs._get(url);
+            JObject jb = JObject.Parse(jstr);
+            List<ShareCard> dyn = new List<ShareCard>();
+            foreach (JObject j in (JArray)jb["data"]["items"])
+            {
+                dyn.Add(
+                        new ShareCard
+                        {
+                            Uid = j["desc"].Value<int>("uid"),
+                            UName = j["desc"]["user_profile"]["info"].Value<string>("uname"),
+                            UFace = j["desc"]["user_profile"]["info"].Value<string>("face"),
+                            Content = GetShareTextContent(j.Value<string>("card"))
+                        }
+                    );
+            }
+            more = jb["data"].Value<bool>("has_more");
+            if (more)
+            {
+                offset = jb["data"].Value<string>("offset");
+            }
+            count = jb["data"].Value<int>("total");
+            return dyn;
+        }
+
+        public static string GetShareTextContent(string json)
+        {
+            JObject jb = JObject.Parse(json);
+            return jb["item"].Value<string>("content");
         }
     }
 
@@ -252,6 +317,14 @@ namespace BiliApi
             DateTime dt_1970 = new DateTime(1970, 1, 1, 8, 0, 0);
             return (int)(sendtime - dt_1970).TotalSeconds;
         }
+    }
+
+    public struct ShareCard
+    {
+        public int Uid;
+        public string UName;
+        public string UFace;
+        public string Content;
     }
 
     public struct Videoinfo

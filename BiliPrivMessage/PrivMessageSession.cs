@@ -66,6 +66,26 @@ namespace BiliApi.BiliPrivMessage
             }
         }
 
+        public static void closeSession(int id, int sstype, ThirdPartAPIs sess)
+        {
+            //https://api.vc.bilibili.com/session_svr/v1/session_svr/remove_session
+            //post: talker_id,session_type,build: 0,mobi_app: web,csrf,csrf_token
+            sess._post_with_cookies_and_refer("https://api.vc.bilibili.com/session_svr/v1/session_svr/remove_session",
+                "https://message.bilibili.com/", new Dictionary<string, string> {
+                    { "talker_id", id.ToString() } ,
+                    { "session_type", sstype.ToString() },
+                    { "build", "0" },
+                    { "mobi_app", "web" },
+                    { "csrf", sess.GetCsrf() },
+                    { "csrf_token", sess.GetCsrf() },
+                });
+        }
+
+        public void Close()
+        {
+            closeSession(this.talker_id, this.sessiontype, sess);
+        }
+
         public bool reload()
         {
             CookieCollection ck = sess.CookieContext;
