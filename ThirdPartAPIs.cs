@@ -437,25 +437,38 @@ namespace BiliApi
             return getBiliVideoParticipants(json);
         }
 
+        [Obsolete("B站官方已停用禁言时长功能，所有封禁将是永久的",false)]
+        public string banUIDfromroom(int roomid, int uid, int len)
+        {
+            return banUIDfromroom(roomid, uid);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="roomid">房间ID</param>
         /// <param name="uid">被封禁者UID</param>
-        /// <param name="len">时长，单位为小时</param>
         /// <returns></returns>
-        public string banUIDfromroom(int roomid, int uid, int len = 1)
+        public string banUIDfromroom(int roomid, int uid)
         {
-            //https://api.live.bilibili.com/banned_service/v2/Silent/add_block_user
-            string url = "https://api.live.bilibili.com/banned_service/v2/Silent/add_block_user";
-            Dictionary<string, string> form = new Dictionary<string, string>
-            {
+            //https://api.live.bilibili.com/banned_service/v2/Silent/add_block_user  老版本API，弃用
+            /*
                 { "roomid", roomid.ToString() },
                 { "block_uid", uid.ToString() },
                 { "hour", len.ToString() },
                 { "csrf", GetCsrf() },
                 { "csrf_token", GetCsrf() }
-            };
+            */
+            //https://api.live.bilibili.com/xlive/web-ucenter/v1/banned/AddSilentUser
+            string url = "https://api.live.bilibili.com/banned_service/v2/Silent/add_block_user";
+            Dictionary<string, string> form = new Dictionary<string, string>
+                    {
+                        { "room_id", roomid.ToString() },
+                        { "tuid", uid.ToString() },
+                        { "mobile_app", "web" },
+                        { "csrf", GetCsrf() },
+                        { "csrf_token", GetCsrf() }
+                    };
             return _post_with_manacookies_and_refer(url, "https://live.bilibili.com/" + roomid, form);
         }
 
@@ -464,12 +477,12 @@ namespace BiliApi
             //https://api.live.bilibili.com/banned_service/v1/Silent/del_room_block_user
             string url = "https://api.live.bilibili.com/banned_service/v1/Silent/del_room_block_user";
             Dictionary<string, string> form = new Dictionary<string, string>
-            {
-                { "roomid", roomid.ToString() },
-                { "id", bid.ToString() },
-                { "csrf", GetCsrf() },
-                { "csrf_token", GetCsrf() }
-            };
+{
+    { "roomid", roomid.ToString() },
+    { "id", bid.ToString() },
+    { "csrf", GetCsrf() },
+    { "csrf_token", GetCsrf() }
+};
             return _post_with_manacookies_and_refer(url, "https://live.bilibili.com/" + roomid, form);
         }
 

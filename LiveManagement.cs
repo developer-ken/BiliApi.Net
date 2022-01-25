@@ -19,9 +19,15 @@ namespace BiliApi
             this.sess = blr.sess;
         }
 
-        public bool banUID(int uid, int len = 1)
+        [Obsolete("B站官方已停用禁言时长功能，所有封禁将是永久的", false)]
+        public bool banUID(int uid, int len)
         {
-            string result = sess.banUIDfromroom(blr.roomid, uid, len);
+            return banUID(uid);
+        }
+
+        public bool banUID(int uid)
+        {
+            string result = sess.banUIDfromroom(blr.roomid, uid);
             JObject jb = (JObject)JsonConvert.DeserializeObject(result);
             return (jb.Value<int>("code") == 0);
         }

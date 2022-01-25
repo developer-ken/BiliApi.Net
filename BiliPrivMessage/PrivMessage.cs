@@ -6,7 +6,8 @@ namespace BiliApi.BiliPrivMessage
 {
     public class PrivMessage : IComparable
     {
-        public int recieiver_id, timestamp, msgtype, msg_seqno;
+        public int recieiver_id, timestamp, msgtype;
+        public long msg_seqno;
         public long msg_key;
         public BiliUser talker;
         public string content;
@@ -18,7 +19,7 @@ namespace BiliApi.BiliPrivMessage
             timestamp = json.Value<int>("timestamp");
             talker = BiliUser.getUser(json.Value<int>("sender_uid"),sess);
             msgtype = json.Value<int>("msg_type");
-            msg_seqno = json.Value<int>("msg_seqno");
+            msg_seqno = json.Value<long>("msg_seqno");
             msg_key = json.Value<long>("msg_key");
             object jobjdes = JsonConvert.DeserializeObject(json.Value<string>("content"));
             try
