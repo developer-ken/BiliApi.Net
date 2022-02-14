@@ -30,7 +30,7 @@ namespace BiliApi
         public BiliLiveRoom(int roomid,ThirdPartAPIs sess)
         {
             this.sess = sess;
-            string data = ThirdPartAPIs._get("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
+            string data = sess._get_with_cookies("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
             JObject json = (JObject)JsonConvert.DeserializeObject(data);
             roomid = json["data"]["room_info"].Value<int>("room_id");
             shortid = json["data"]["room_info"].Value<int>("short_id");
@@ -48,7 +48,7 @@ namespace BiliApi
         public BiliLiveRoom(int roomid, IAuthBase auth)
         {
             this.sess = new ThirdPartAPIs(auth.GetLoginCookies());
-            string data = ThirdPartAPIs._get("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
+            string data = sess._get_with_cookies("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
             JObject json = (JObject)JsonConvert.DeserializeObject(data);
             roomid = json["data"]["room_info"].Value<int>("room_id");
             shortid = json["data"]["room_info"].Value<int>("short_id");
