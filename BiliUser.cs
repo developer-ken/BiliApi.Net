@@ -21,8 +21,8 @@ namespace BiliApi
             NotVerified = -1, Individual = 0, Organization = 1
         }
 
-        public static Dictionary<int, BiliUser> userlist = new Dictionary<int, BiliUser>();
-        public int uid { get; private set; }
+        public static Dictionary<long, BiliUser> userlist = new Dictionary<long, BiliUser>();
+        public long uid { get; private set; }
         public string name { get; private set; }
         public string sex { get; private set; }
         public string sign { get; private set; }
@@ -34,9 +34,9 @@ namespace BiliApi
         public int fans { get; private set; }
         public OfficialInfo official { get; private set; }
         public JObject raw_json { get; private set; }
-        private ThirdPartAPIs sess;
+        private BiliSession sess;
 
-        public static BiliUser getUser(int uid, ThirdPartAPIs sess)
+        public static BiliUser getUser(long uid, BiliSession sess)
         {
             if (userlist.ContainsKey(uid))
             {
@@ -59,9 +59,8 @@ namespace BiliApi
         /// <param name="face"></param>
         /// <param name="level"></param>
         /// <param name="rank"></param>
-        public BiliUser(int uid, string name, string sex, string sign, bool fans_badge, int coins, string face, int level, int rank, OfficialInfo official, ThirdPartAPIs sess)
+        public BiliUser(long uid, string name, string sex, string sign, bool fans_badge, int coins, string face, int level, int rank, OfficialInfo official, BiliSession sess)
         {
-            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             this.uid = uid;
             this.name = name;
             this.sex = sex;
@@ -85,14 +84,13 @@ namespace BiliApi
         /// <para>系统会自己去抓数据</para>
         /// </summary>
         /// <param name="uid"></param>
-        public BiliUser(int uid, ThirdPartAPIs sess, bool nocache = false)
+        public BiliUser(long uid, BiliSession sess, bool nocache = false)
         {
-            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             try
             {
                 this.sess = sess;
                 raw_json = (JObject)JsonConvert.DeserializeObject(sess.getBiliUserInfoJson(uid));
-                this.uid = int.Parse(raw_json["data"]["mid"].ToString());
+                this.uid = long.Parse(raw_json["data"]["mid"].ToString());
                 name = raw_json["data"]["name"].ToString();
                 sex = raw_json["data"]["sex"].ToString();
                 sign = raw_json["data"]["sign"].ToString();
@@ -131,11 +129,10 @@ namespace BiliApi
         /// <param name="json"></param>
         public BiliUser(string json)
         {
-            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             raw_json = (JObject)JsonConvert.DeserializeObject(json);
             if (raw_json["data"] == null)
             {
-                uid = int.Parse(raw_json["mid"].ToString());
+                uid = long.Parse(raw_json["mid"].ToString());
                 name = raw_json["name"].ToString();
                 sex = raw_json["sex"].ToString();
                 sign = raw_json["sign"].ToString();
@@ -166,7 +163,7 @@ namespace BiliApi
             }
             else
             {
-                uid = int.Parse(raw_json["data"]["mid"].ToString());
+                uid = long.Parse(raw_json["data"]["mid"].ToString());
                 name = raw_json["data"]["name"].ToString();
                 sex = raw_json["data"]["sex"].ToString();
                 sign = raw_json["data"]["sign"].ToString();
@@ -210,9 +207,8 @@ namespace BiliApi
         /// <param name="json"></param>
         public BiliUser(JObject json)
         {
-            if (userlist == null) userlist = new Dictionary<int, BiliUser>();
             raw_json = json;
-            uid = int.Parse(raw_json["data"]["mid"].ToString());
+            uid = long.Parse(raw_json["data"]["mid"].ToString());
             name = raw_json["data"]["name"].ToString();
             sex = raw_json["data"]["sex"].ToString();
             sign = raw_json["data"]["sign"].ToString();

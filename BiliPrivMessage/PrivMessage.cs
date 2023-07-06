@@ -13,7 +13,7 @@ namespace BiliApi.BiliPrivMessage
         public string content;
         public JObject content_json;
 
-        public PrivMessage(JToken json,ThirdPartAPIs sess)
+        public PrivMessage(JToken json,BiliSession sess)
         {
             recieiver_id = json.Value<int>("receiver_id");
             timestamp = json.Value<int>("timestamp");

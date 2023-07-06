@@ -121,7 +121,7 @@ namespace BiliApi.Auth
         /// <returns>OAuthKey和登录链接</returns>
         public LoginQRCode GetNewQRItem()
         {
-            JObject jb = (JObject)JsonConvert.DeserializeObject(ThirdPartAPIs._get(URL_GETKEY));
+            JObject jb = (JObject)JsonConvert.DeserializeObject(BiliSession._get(URL_GETKEY));
             if (jb.Value<int>("code") != 0)
             {
                 throw new ApiRemoteException(jb);
@@ -149,7 +149,7 @@ namespace BiliApi.Auth
         /// <returns>二维码状态</returns>
         public QRState GetQRState(LoginQRCode qr)
         {
-            var res = ThirdPartAPIs._post_cookies(URL_STATUS, new Dictionary<string, string>()
+            var res = BiliSession._post_cookies(URL_STATUS, new Dictionary<string, string>()
             {
                 {"oauthKey",qr.OAuthKey},
                 {"gourl","https://www.bilibili.com/"}
@@ -193,7 +193,7 @@ namespace BiliApi.Auth
 
         public bool IsOnline()
         {
-            string str = ThirdPartAPIs._get_with_cookies("https://api.bilibili.com/x/web-interface/nav", Cookies);
+            string str = BiliSession._get_with_cookies("https://api.bilibili.com/x/web-interface/nav", Cookies);
             JObject jb = (JObject)JsonConvert.DeserializeObject(str);
             return (jb.Value<int>("code") == 0);
         }

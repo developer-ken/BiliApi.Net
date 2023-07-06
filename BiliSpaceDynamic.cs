@@ -18,9 +18,9 @@ namespace BiliApi
         private readonly int uid = -1;
         private List<Dyncard> dyns = new List<Dyncard>();
         private readonly List<long> checked_ids = new List<long>();
-        private ThirdPartAPIs sess;
+        private BiliSession sess;
 
-        public BiliSpaceDynamic(int uid, ThirdPartAPIs sess)
+        public BiliSpaceDynamic(int uid, BiliSession sess)
         {
             this.sess = sess;
             this.uid = uid;
@@ -28,7 +28,7 @@ namespace BiliApi
 
         public BiliSpaceDynamic(int uid, IAuthBase auth)
         {
-            this.sess = new ThirdPartAPIs(auth.GetLoginCookies());
+            this.sess = new BiliSession(auth.GetLoginCookies());
             this.uid = uid;
         }
 
@@ -257,7 +257,7 @@ namespace BiliApi
         {
             string url = @"https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/repost_detail?dynamic_id=" + id +
                 (offset.Length > 1 ? ("&offset=" + offset) : "");
-            string jstr = ThirdPartAPIs._get(url);
+            string jstr = BiliSession._get(url);
             JObject jb = JObject.Parse(jstr);
             List<ShareCard> dyn = new List<ShareCard>();
             foreach (JObject j in (JArray)jb["data"]["items"])

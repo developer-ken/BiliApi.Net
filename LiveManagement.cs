@@ -12,7 +12,7 @@ namespace BiliApi
     public class LiveManagement
     {
         private readonly BiliLiveRoom blr;
-        private ThirdPartAPIs sess;
+        private BiliSession sess;
         public LiveManagement(BiliLiveRoom blr)
         {
             this.blr = blr;

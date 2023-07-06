@@ -13,7 +13,7 @@ namespace BiliApi.BiliPrivMessage
         public List<PrivMessageSession> followed_sessions;
         public List<PrivMessageSession> unfollowed_sessions;
         public List<PrivMessageSession> group_sessions;
-        public ThirdPartAPIs sess;
+        public BiliSession sess;
         public long last_refresh = 0;
         public string lastjson;
         public readonly long MyUID;
@@ -23,13 +23,13 @@ namespace BiliApi.BiliPrivMessage
         /// </summary>
         public PrivSessionManager(IAuthBase auth)
         {
-            sess = new ThirdPartAPIs(auth.GetLoginCookies());
+            sess = new BiliSession(auth.GetLoginCookies());
             followed_sessions = new List<PrivMessageSession>();
             unfollowed_sessions = new List<PrivMessageSession>();
             group_sessions = new List<PrivMessageSession>();
             MyUID = sess.getCurrentUserId();
         }
-        public PrivSessionManager(ThirdPartAPIs sess)
+        public PrivSessionManager(BiliSession sess)
         {
             this.sess = sess;
             followed_sessions = new List<PrivMessageSession>();

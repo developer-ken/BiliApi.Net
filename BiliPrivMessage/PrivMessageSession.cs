@@ -13,7 +13,7 @@ namespace BiliApi.BiliPrivMessage
     public class PrivMessageSession
     {
         public bool loaded = false;
-        public int talker_id;
+        public long talker_id;
         public int sessiontype;
         public long session_ts;
         public int unread_cnt;
@@ -22,19 +22,19 @@ namespace BiliApi.BiliPrivMessage
         public string lastjson;
         public bool followed;
         public bool isGroup;
-        private int uid;
-        private ThirdPartAPIs sess;
-        public PrivMessageSession(JToken json, ThirdPartAPIs sess)
+        private long uid;
+        private BiliSession sess;
+        public PrivMessageSession(JToken json, BiliSession sess)
         {
             this.sess = sess;
             init(json);
         }
-        public PrivMessageSession(int targetuid, ThirdPartAPIs sess)
+        public PrivMessageSession(long targetuid, BiliSession sess)
         {
             this.sess = sess;
             talker_id = targetuid;
             CookieCollection ck = sess.CookieContext;
-            uid = int.Parse(ck["DedeUserID"].Value);
+            uid = long.Parse(ck["DedeUserID"].Value);
             isGroup = false;
         }
 
@@ -52,7 +52,7 @@ namespace BiliApi.BiliPrivMessage
             uid = int.Parse(ck["DedeUserID"].Value);
         }
 
-        public static PrivMessageSession openSessionWith(int taruid, ThirdPartAPIs sess)
+        public static PrivMessageSession openSessionWith(long taruid, BiliSession sess)
         {
             string rtv = sess._get_with_cookies("https://api.vc.bilibili.com/session_svr/v1/session_svr/session_detail?talker_id=" + taruid + "&session_type=1");
             JObject raw_json = (JObject)JsonConvert.DeserializeObject(rtv);
@@ -66,7 +66,7 @@ namespace BiliApi.BiliPrivMessage
             }
         }
 
-        public static void closeSession(int id, int sstype, ThirdPartAPIs sess)
+        public static void closeSession(long id, int sstype, BiliSession sess)
         {
             //https://api.vc.bilibili.com/session_svr/v1/session_svr/remove_session
             //post: talker_id,session_type,build: 0,mobi_app: web,csrf,csrf_token

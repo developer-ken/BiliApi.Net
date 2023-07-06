@@ -25,9 +25,9 @@ namespace BiliApi
         public static short STATUS_OFFLINE = 0;
         public static short STATUS_VEDIOPLAY = 2;
         public LiveManagement manage;
-        public ThirdPartAPIs sess;
+        public BiliSession sess;
 
-        public BiliLiveRoom(int roomid,ThirdPartAPIs sess)
+        public BiliLiveRoom(int roomid,BiliSession sess)
         {
             this.sess = sess;
             string data = sess._get_with_cookies("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
@@ -47,7 +47,7 @@ namespace BiliApi
 
         public BiliLiveRoom(int roomid, IAuthBase auth)
         {
-            this.sess = new ThirdPartAPIs(auth.GetLoginCookies());
+            this.sess = new BiliSession(auth.GetLoginCookies());
             string data = sess._get_with_cookies("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
             JObject json = (JObject)JsonConvert.DeserializeObject(data);
             roomid = json["data"]["room_info"].Value<int>("room_id");
@@ -79,7 +79,7 @@ namespace BiliApi
 
         public static short getLiveStatus(int roomid)
         {
-            string data = ThirdPartAPIs._get("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
+            string data = BiliSession._get("https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id=" + roomid);
             JObject json = (JObject)JsonConvert.DeserializeObject(data);
             return json["data"]["room_info"].Value<short>("live_status");
         }

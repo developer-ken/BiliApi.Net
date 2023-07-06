@@ -16,8 +16,8 @@ namespace BiliApi
         public bool loaded = false;
         public BiliUser owner;
         public List<BiliUser> participants;
-        private ThirdPartAPIs sess;
-        public BiliVideo(string vid, ThirdPartAPIs sess)
+        private BiliSession sess;
+        public BiliVideo(string vid, BiliSession sess)
         {
             this.sess = sess;
             this.vid = vid;
