@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using BiliApi.Modules;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
@@ -241,6 +242,32 @@ namespace BiliApi
         public override int GetHashCode()
         {
             return uid.GetHashCode();
+        }
+
+        public List<Medal> getMedals()
+        {
+            List<Medal> metals = new List<Medal>();
+            JObject jb = JObject.Parse(sess.getBiliUserMedal(uid));
+            if (jb.Value<int>("code") != 0) return metals;
+            JArray ja = (JArray)jb["data"]["list"];
+            foreach (JObject obj in ja)
+            {
+                metals.Add(new Medal(obj));
+            }
+            return metals;
+        }
+
+        public static List<Medal> getMedals(BiliSession sess, long uid)
+        {
+            List<Medal> metals = new List<Medal>();
+            JObject jb = JObject.Parse(sess.getBiliUserMedal(uid));
+            if (jb.Value<int>("code") != 0) return metals;
+            JArray ja = (JArray)jb["data"]["list"];
+            foreach (JObject obj in ja)
+            {
+                metals.Add(new Medal(obj));
+            }
+            return metals;
         }
     }
 }

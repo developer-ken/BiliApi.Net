@@ -15,8 +15,8 @@ namespace BiliApi.Auth
     /// </summary>
     public class QRLogin : IAuthBase
     {
-        const string URL_GETKEY = "https://passport.bilibili.com/qrcode/getLoginUrl";
-        const string URL_STATUS = "https://passport.bilibili.com/qrcode/getLoginInfo";
+        const string URL_GETKEY = "https://passport.bilibili.com/x/passport-login/web/qrcode/generate";
+        const string URL_STATUS = "https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=";
 
         public CookieCollection Cookies { get; private set; }
         public LoginQRCode QRToken { private set; get; }
@@ -129,7 +129,7 @@ namespace BiliApi.Auth
             return new LoginQRCode
             {
                 ScanUrl = jb["data"].Value<string>("url"),
-                OAuthKey = jb["data"].Value<string>("oauthKey")
+                OAuthKey = jb["data"].Value<string>("qrcode_key")
             };
         }
 
@@ -149,23 +149,29 @@ namespace BiliApi.Auth
         /// <returns>二维码状态</returns>
         public QRState GetQRState(LoginQRCode qr)
         {
-            var res = BiliSession._post_cookies(URL_STATUS, new Dictionary<string, string>()
+            var res = BiliSession._get_cookies(URL_STATUS + qr.OAuthKey/*, new Dictionary<string, string>()
             {
                 {"oauthKey",qr.OAuthKey},
                 {"gourl","https://www.bilibili.com/"}
-            });
+            }*/);
             JObject jb = (JObject)JsonConvert.DeserializeObject(res.Result);
             try
             {
-                switch (jb.Value<int>("data"))
+                switch (jb["data"].Value<int>("code"))
                 {
-                    case -4:
+                    case 86101:
                         return QRState.WaitingForScan;
-                    case -5:
+                    case 86090:
                         return QRState.WaitingForAccept;
-                    case -2:
-                    case -1:
+                    case 86038:
                         return QRState.Expired;
+                    case 0:
+                        {
+                             Cookies = res.Cookies;
+                            LoggedIn = IsOnline();
+                            if (!LoggedIn) throw new AuthenticateFailedException(jb);
+                            return QRState.LoggedIn;
+                        }
                     default:
                         throw new UnexpectedResultException(jb.ToString(), "Unexpected QRCode state");
                 }
@@ -174,9 +180,9 @@ namespace BiliApi.Auth
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                if (jb.Value<bool>("status"))
+                /*if (jb.Value<bool>("status"))
                 {
 
                     Cookies = res.Cookies;
@@ -184,7 +190,7 @@ namespace BiliApi.Auth
                     if (!LoggedIn) throw new AuthenticateFailedException(jb);
                     return QRState.LoggedIn;
                 }
-                else
+                else*/
                 {
                     throw new UnexpectedResultException(jb.ToString());
                 }

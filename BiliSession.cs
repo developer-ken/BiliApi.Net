@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace BiliApi
@@ -16,6 +17,7 @@ namespace BiliApi
     /// </summary>
     public class BiliSession
     {
+        #region 下层实现
         public const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36";
         public BiliSession(CookieCollection c)
         {
@@ -119,14 +121,15 @@ namespace BiliApi
 
         public static ResultWithCookie _post_cookies(string url, Dictionary<string, string> form_data = null)
         {
-            if (form_data == null) form_data = new Dictionary<string, string>();
             string retString = "";
-            foreach (KeyValuePair<string, string> fd in form_data)
+            if (form_data != null)
             {
-                retString += "&" + HttpUtility.UrlEncode(fd.Key) + "=" + HttpUtility.UrlEncode(fd.Value);
+                foreach (KeyValuePair<string, string> fd in form_data)
+                {
+                    retString += "&" + HttpUtility.UrlEncode(fd.Key) + "=" + HttpUtility.UrlEncode(fd.Value);
+                }
+                retString = retString.Substring(1);
             }
-            retString = retString.Substring(1);
-
             byte[] bs = Encoding.UTF8.GetBytes(retString);
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
@@ -138,7 +141,7 @@ namespace BiliApi
             Stream reqStream = request.GetRequestStream();
             reqStream.Write(bs, 0, bs.Length);
             reqStream.Close();
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse(); 
             Stream myResponseStream = response.GetResponseStream();
             StreamReader streamReader = new StreamReader(myResponseStream);
             retString = streamReader.ReadToEnd();
@@ -147,7 +150,7 @@ namespace BiliApi
             return new ResultWithCookie()
             {
                 Result = retString,
-                Cookies = response.Cookies
+                Cookies = request.CookieContainer.GetCookies(new Uri(url))
             };
         }
 
@@ -156,8 +159,8 @@ namespace BiliApi
             string retString;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
-            request.ContentType = "application/json";
             request.UserAgent = USER_AGENT;
+            request.CookieContainer = new CookieContainer();
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream myResponseStream = response.GetResponseStream();
             StreamReader streamReader = new StreamReader(myResponseStream);
@@ -167,7 +170,7 @@ namespace BiliApi
             return new ResultWithCookie()
             {
                 Result = retString,
-                Cookies = response.Cookies
+                Cookies = request.CookieContainer.GetCookies(new Uri(url))
             };
         }
 
@@ -350,6 +353,68 @@ namespace BiliApi
             throw new CookieMissingException(CookieContext, "bili_jct");
         }
 
+        private static readonly Regex RegexSplitCookie2 = new Regex(@"[^,][\S\s]+?;+[\S\s]+?(?=,\S)");
+        public static CookieCollection DeserilizeCookieStr(string cookiestr)
+        {
+            var cookieCollection = new CookieCollection();
+            //拆分Cookie
+            //var listStr = RegexSplitCookie.Split(setCookie);
+            cookiestr += ",T";//配合RegexSplitCookie2 加入后缀
+            var listStr = RegexSplitCookie2.Matches(cookiestr);
+            //循环遍历
+            foreach (Match item in listStr)
+            {
+                //根据; 拆分Cookie 内容
+                var cookieItem = item.Value.Split(';');
+                var cookie = new Cookie();
+                for (var index = 0; index < cookieItem.Length; index++)
+                {
+                    var info = cookieItem[index];
+                    //第一个 默认 Cookie Name
+                    //判断键值对
+                    if (info.Contains("="))
+                    {
+                        var indexK = info.IndexOf('=');
+                        var name = info.Substring(0, indexK).Trim();
+                        var val = info.Substring(indexK + 1);
+                        if (index == 0)
+                        {
+                            cookie.Name = name;
+                            cookie.Value = val;
+                            continue;
+                        }
+                        if (name.Equals("Domain", StringComparison.OrdinalIgnoreCase))
+                        {
+                            cookie.Domain = val;
+                        }
+                        else if (name.Equals("Expires", StringComparison.OrdinalIgnoreCase))
+                        {
+                            DateTime.TryParse(val, out var expires);
+                            cookie.Expires = expires;
+                        }
+                        else if (name.Equals("Path", StringComparison.OrdinalIgnoreCase))
+                        {
+                            cookie.Path = val;
+                        }
+                        else if (name.Equals("Version", StringComparison.OrdinalIgnoreCase))
+                        {
+                            cookie.Version = Convert.ToInt32(val);
+                        }
+                    }
+                    else
+                    {
+                        if (info.Trim().Equals("HttpOnly", StringComparison.OrdinalIgnoreCase))
+                        {
+                            cookie.HttpOnly = true;
+                        }
+                    }
+                }
+                cookieCollection.Add(cookie);
+            }
+            return cookieCollection;
+        }
+
+        #endregion
 
         public string getBliveTitle(int roomid)
         {
@@ -497,6 +562,12 @@ namespace BiliApi
         public Dictionary<string, string> getBiliVideoParticipants(JObject json)
         {
             throw new NotImplementedException();
+        }
+
+        public string getBiliUserMedal(long uid)
+        {
+            string url = "https://api.live.bilibili.com/xlive/web-ucenter/user/MedalWall?target_id="+ uid;
+            return _get_with_manacookies_and_refer(url, "https://space.bilibili.com/" + uid);
         }
 
         //public static 
