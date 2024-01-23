@@ -7,13 +7,13 @@ namespace BiliApi.Modules
 {
     public class Medal
     {
-        public int Level { get; private set; }
-        public long TargetId { get; private set; }
-        public string TargetName { get; private set; }
-        public string Name { get; private set; }
-        public int GuardLevel { get; private set; }
-        public int MedalId { get; private set; }
-        public int Intimacy { get; private set; }
+        public int Level { get; set; }
+        public long TargetId { get; set; }
+        public string TargetName { get; set; }
+        public string Name { get; set; }
+        public int GuardLevel { get; set; }
+        public int MedalId { get; set; }
+        public int Intimacy { get; set; }
 
         public Medal(JObject jb)
         {
@@ -25,5 +25,7 @@ namespace BiliApi.Modules
             MedalId = jb["medal_info"].Value<int>("medal_id");
             Intimacy = jb["medal_info"].Value<int>("intimacy");
         }
+
+        public Medal() { }
     }
 }
