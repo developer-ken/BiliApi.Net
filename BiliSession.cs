@@ -457,11 +457,12 @@ namespace BiliApi
             return _get_with_cookies_and_refer(url, "https://space.bilibili.com/" + uid + "/fans/fans");
         }
 
-        public string getBiliUserInfoJson(long uid)
+        public static string getBiliUserInfoJson(long uid)
         {
             string url = "https://api.bilibili.com/x/space/acc/info?mid=" + uid + "&jsonp=jsonp";
             return _get(url);
         }
+
         public string getBiliUserDynamicJson(long uid)
         {
             string url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=" + uid + "&offset_dynamic_id=0&need_top=1";

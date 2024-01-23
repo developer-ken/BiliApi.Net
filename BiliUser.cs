@@ -37,7 +37,7 @@ namespace BiliApi
         public JObject raw_json { get; private set; }
         private BiliSession sess;
 
-        public static BiliUser getUser(long uid, BiliSession sess)
+        public static BiliUser getUser(long uid, BiliSession sess = null)
         {
             if (userlist.ContainsKey(uid))
             {
@@ -85,12 +85,12 @@ namespace BiliApi
         /// <para>系统会自己去抓数据</para>
         /// </summary>
         /// <param name="uid"></param>
-        public BiliUser(long uid, BiliSession sess, bool nocache = false)
+        public BiliUser(long uid, BiliSession sess = null, bool nocache = false)
         {
             try
             {
                 this.sess = sess;
-                raw_json = (JObject)JsonConvert.DeserializeObject(sess.getBiliUserInfoJson(uid));
+                raw_json = (JObject)JsonConvert.DeserializeObject(BiliSession.getBiliUserInfoJson(uid));
                 this.uid = long.Parse(raw_json["data"]["mid"].ToString());
                 name = raw_json["data"]["name"].ToString();
                 sex = raw_json["data"]["sex"].ToString();
