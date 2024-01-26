@@ -91,23 +91,23 @@ namespace BiliApi
             {
                 this.sess = sess;
                 raw_json = (JObject)JsonConvert.DeserializeObject(BiliSession.getBiliUserInfoJson(uid));
-                this.uid = long.Parse(raw_json["data"]["mid"].ToString());
-                name = raw_json["data"]["name"].ToString();
-                sex = raw_json["data"]["sex"].ToString();
-                sign = raw_json["data"]["sign"].ToString();
-                rank = int.Parse(raw_json["data"]["rank"].ToString());
-                level = int.Parse(raw_json["data"]["level"].ToString());
-                coins = int.Parse(raw_json["data"]["coins"].ToString());
-                face = raw_json["data"]["face"].ToString();
-                fans_badge = raw_json["data"]["fans_badge"].ToString() != "false";
+                this.uid = long.Parse(raw_json["data"]["info"]["mid"].ToString());
+                name = raw_json["data"]["info"]["name"].ToString();
+                sex = raw_json["data"]["info"]["sex"].ToString();
+                sign = raw_json["data"]["info"]["sign"].ToString();
+                rank = int.Parse(raw_json["data"]["info"]["rank"].ToString());
+                level = int.Parse(raw_json["data"]["info"]["level"].ToString());
+                //coins = int.Parse(raw_json["data"]["coins"].ToString());
+                face = raw_json["data"]["info"]["face"].ToString();
+                //fans_badge = raw_json["data"]["fans_badge"].ToString() != "false";
                 try
                 {
                     official = new OfficialInfo()
                     {
-                        Type = (OfficialType)raw_json["data"]["official"].Value<int>("type"),
-                        Title = raw_json["data"]["official"].Value<string>("title"),
-                        Description = raw_json["data"]["official"].Value<string>("desc"),
-                        Role = raw_json["data"]["official"].Value<int>("role")
+                        Type = (OfficialType)raw_json["data"]["info"]["official_info"].Value<int>("type"),
+                        Title = raw_json["data"]["info"]["official_info"].Value<string>("title"),
+                        Description = raw_json["data"]["info"]["official_info"].Value<string>("desc"),
+                        Role = raw_json["data"]["info"]["official_info"].Value<int>("role")
                     };
                 }
                 catch { }

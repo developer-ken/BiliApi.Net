@@ -459,7 +459,7 @@ namespace BiliApi
 
         public static string getBiliUserInfoJson(long uid)
         {
-            string url = "https://api.bilibili.com/x/space/acc/info?mid=" + uid + "&jsonp=jsonp";
+            string url = "https://api.bilibili.com/x/space/app/index?mid=" + uid;
             return _get(url);
         }
 

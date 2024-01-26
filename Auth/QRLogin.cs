@@ -99,6 +99,7 @@ namespace BiliApi.Auth
         /// <returns>保持登录状态所需的Cookie</returns>
         public CookieCollection Login()
         {
+            if (LoggedIn) return Cookies;
             while (true)
             {
                 var stat = GetQRState(QRToken);
@@ -167,7 +168,7 @@ namespace BiliApi.Auth
                         return QRState.Expired;
                     case 0:
                         {
-                             Cookies = res.Cookies;
+                            Cookies = res.Cookies;
                             LoggedIn = IsOnline();
                             if (!LoggedIn) throw new AuthenticateFailedException(jb);
                             return QRState.LoggedIn;
