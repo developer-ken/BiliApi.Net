@@ -33,6 +33,7 @@ namespace BiliApi
         public int level { get; private set; }
         public int rank { get; private set; }
         public int fans { get; private set; }
+        public int liveroomid { get; private set; }
         public OfficialInfo official { get; private set; }
         public JObject raw_json { get; private set; }
         private BiliSession sess;
@@ -111,6 +112,7 @@ namespace BiliApi
                     };
                 }
                 catch { }
+                liveroomid = raw_json["data"]["info"]["live"]["roomid"].Value<int>();
             }
             catch
             {

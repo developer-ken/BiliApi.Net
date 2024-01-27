@@ -37,7 +37,6 @@ namespace BiliApi
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
-            request.ContentType = "application/json";
             request.UserAgent = USER_AGENT;
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream myResponseStream = response.GetResponseStream();
