@@ -31,6 +31,16 @@ namespace BiliApi
 
         public CookieCollection CookieContext { private set; get; }
 
+        public string GetCookieString()
+        {
+            StringBuilder cookieString = new StringBuilder();
+            foreach (Cookie cookie in CookieContext)
+            {
+                cookieString.Append($"{cookie.Name}={cookie.Value}; ");
+            }
+            return cookieString.ToString();
+        }
+
         public static string _get(string url)
         {
             string retString;
