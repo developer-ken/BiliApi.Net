@@ -448,10 +448,10 @@ namespace BiliApi
             return _get_with_cookies_and_refer(url, "https://www.bilibili.com/");
         }
 
-        public int getCurrentUserId()
+        public long getCurrentUserId()
         {
             JObject jb = JObject.Parse(getCurrentUserDataStr());
-            return jb["data"].Value<int>("mid");
+            return jb["data"].Value<long>("mid");
         }
 
         public BiliUser getCurrentUserData()
