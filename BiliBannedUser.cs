@@ -7,7 +7,8 @@ namespace BiliApi
     /// </summary>
     public class BiliBannedUser
     {
-        public int uid, len, op, id;
+        public long uid, op, id;
+        public int len;
         public string uname, opname;
         public DateTime optime, endtime;
         public BanReason banreason;

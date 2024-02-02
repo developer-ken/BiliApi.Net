@@ -150,7 +150,7 @@ namespace BiliApi
             Stream reqStream = request.GetRequestStream();
             reqStream.Write(bs, 0, bs.Length);
             reqStream.Close();
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse(); 
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream myResponseStream = response.GetResponseStream();
             StreamReader streamReader = new StreamReader(myResponseStream);
             retString = streamReader.ReadToEnd();
@@ -512,8 +512,8 @@ namespace BiliApi
             return getBiliVideoParticipants(json);
         }
 
-        [Obsolete("Ban will always be permanant now, \"len\" will take no effect.",false)]
-        public string banUIDfromroom(int roomid, int uid, int len)
+        [Obsolete("Ban will always be permanant now, \"len\" will take no effect.", false)]
+        public string banUIDfromroom(int roomid, long uid, int len)
         {
             return banUIDfromroom(roomid, uid);
         }
@@ -524,7 +524,7 @@ namespace BiliApi
         /// <param name="roomid">房间ID</param>
         /// <param name="uid">被封禁者UID</param>
         /// <returns></returns>
-        public string banUIDfromroom(int roomid, int uid)
+        public string banUIDfromroom(int roomid, long uid)
         {
             //https://api.live.bilibili.com/banned_service/v2/Silent/add_block_user  老版本API，弃用
             /*
@@ -535,7 +535,7 @@ namespace BiliApi
                 { "csrf_token", GetCsrf() }
             */
             //https://api.live.bilibili.com/xlive/web-ucenter/v1/banned/AddSilentUser
-            string url = "https://api.live.bilibili.com/banned_service/v2/Silent/add_block_user";
+            string url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/banned/AddSilentUser";
             Dictionary<string, string> form = new Dictionary<string, string>
                     {
                         { "room_id", roomid.ToString() },
@@ -576,7 +576,7 @@ namespace BiliApi
 
         public string getBiliUserMedal(long uid)
         {
-            string url = "https://api.live.bilibili.com/xlive/web-ucenter/user/MedalWall?target_id="+ uid;
+            string url = "https://api.live.bilibili.com/xlive/web-ucenter/user/MedalWall?target_id=" + uid;
             return _get_with_manacookies_and_refer(url, "https://space.bilibili.com/" + uid);
         }
 
