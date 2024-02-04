@@ -259,7 +259,7 @@ namespace BiliApi
             return metals;
         }
 
-        public static List<Medal> getMedals(BiliSession sess, long uid)
+        public static List<Medal> getMedals(BiliSession sess, long uid, bool _ = false)
         {
             List<Medal> metals = new List<Medal>();
             JObject jb = JObject.Parse(sess.getBiliUserMedal(uid));

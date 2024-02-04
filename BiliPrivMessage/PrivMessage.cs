@@ -6,7 +6,8 @@ namespace BiliApi.BiliPrivMessage
 {
     public class PrivMessage : IComparable
     {
-        public int recieiver_id, timestamp, msgtype;
+        public long recieiver_id, timestamp;
+        public int msgtype;
         public long msg_seqno;
         public long msg_key;
         public BiliUser talker;
@@ -15,9 +16,9 @@ namespace BiliApi.BiliPrivMessage
 
         public PrivMessage(JToken json,BiliSession sess)
         {
-            recieiver_id = json.Value<int>("receiver_id");
+            recieiver_id = json.Value<long>("receiver_id");
             timestamp = json.Value<int>("timestamp");
-            talker = BiliUser.getUser(json.Value<int>("sender_uid"),sess);
+            talker = BiliUser.getUser(json.Value<long>("sender_uid"),sess);
             msgtype = json.Value<int>("msg_type");
             msg_seqno = json.Value<long>("msg_seqno");
             msg_key = json.Value<long>("msg_key");

@@ -66,10 +66,11 @@ namespace BiliApi.BiliPrivMessage
 
         public void updateSessions()
         {
-            sess._get_with_cookies("https://api.vc.bilibili.com/session_svr/v1/session_svr/new_sessions?begin_ts=" + last_refresh + "&build=0&mobi_app=web");
-            string rtv = sess._get_with_cookies("https://api.vc.bilibili.com/session_svr/v1/session_svr/ack_sessions?begin_ts=" + last_refresh + "&build=0&mobi_app=web");
-            lastjson = rtv;
+            string rtv = sess._get_with_cookies("https://api.vc.bilibili.com/session_svr/v1/session_svr/new_sessions?begin_ts=" + last_refresh + "&build=0&mobi_app=web");
             JObject raw_json = (JObject)JsonConvert.DeserializeObject(rtv);
+            rtv = sess._get_with_cookies("https://api.vc.bilibili.com/session_svr/v1/session_svr/ack_sessions?begin_ts=" + last_refresh + "&build=0&mobi_app=web");
+            lastjson = rtv;
+            //JObject raw_json = (JObject)JsonConvert.DeserializeObject(rtv);
             if (raw_json.Value<int>("code") != 0)
             {//发生错误
                 throw new ApiRemoteException(raw_json);

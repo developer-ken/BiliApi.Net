@@ -10,7 +10,7 @@ using System.Net;
 
 namespace BiliApi.BiliPrivMessage
 {
-    public class PrivMessageSession
+    public class PrivMessageSession : IEquatable<PrivMessageSession>
     {
         public bool loaded = false;
         public long talker_id;
@@ -40,7 +40,7 @@ namespace BiliApi.BiliPrivMessage
 
         public void init(JToken json)
         {
-            talker_id = json.Value<int>("talker_id");
+            talker_id = json.Value<long>("talker_id");
             sessiontype = json.Value<int>("session_type");
             session_ts = json.Value<long>("session_ts");
             unread_cnt = json.Value<int>("unread_count");
@@ -275,6 +275,11 @@ namespace BiliApi.BiliPrivMessage
         public override int GetHashCode()
         {
             return talker_id.GetHashCode();
+        }
+
+        public bool Equals(PrivMessageSession other)
+        {
+            return talker_id.Equals(other.talker_id);
         }
     }
 }
