@@ -7,6 +7,13 @@ using System.Text;
 using BiliApi.Exceptions;
 using System.Threading;
 using System.Drawing;
+using System.Security.Cryptography;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Security;
+using System.IO;
+using Org.BouncyCastle.OpenSsl;
+using System.Text.RegularExpressions;
 
 namespace BiliApi.Auth
 {
@@ -17,8 +24,17 @@ namespace BiliApi.Auth
     {
         const string URL_GETKEY = "https://passport.bilibili.com/x/passport-login/web/qrcode/generate";
         const string URL_STATUS = "https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=";
+        const string BILI_COOKIES_REFRESH_KEY = "-----BEGIN PUBLIC KEY-----\r\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDLgd2OAkcGVtoE3ThUREbio0Eg\r\nUc/prcajMKXvkCKFCWhJYJcLkcM2DKKcSeFpD/j6Boy538YXnR6VhcuUJOhH2x71\r\nnzPjfdTcqMz7djHum0qSZA0AyCBDABUqCrfNgCiJ00Ra7GmRj+YCK1NJEuewlb40\r\nJNrRuoEUXpabUzGB8QIDAQAB\r\n-----END PUBLIC KEY-----";
 
-        public CookieCollection Cookies { get; private set; }
+        public CookieCollection Cookies
+        {
+            get => CookiesContainer?.GetCookies(new Uri("https://www.bilibili.com"));
+            private set
+            {
+                CookiesContainer = BiliSession.ToContainer(value);
+            }
+        }
+        public CookieContainer CookiesContainer { get; private set; }
         public LoginQRCode QRToken { private set; get; }
         public bool LoggedIn { get; private set; }
 
@@ -221,9 +237,67 @@ namespace BiliApi.Auth
 
         public bool IsOnline()
         {
-            string str = BiliSession._get_with_cookies("https://api.bilibili.com/x/web-interface/nav", Cookies);
+            string str = BiliSession._get_with_cookies("https://api.bilibili.com/x/web-interface/nav", CookiesContainer);
             JObject jb = (JObject)JsonConvert.DeserializeObject(str);
             return (jb.Value<int>("code") == 0);
+        }
+
+        public bool ShouldRefreshCookie()
+        {
+            var str = BiliSession._get_with_cookies("https://passport.bilibili.com/x/passport-login/web/cookie/info", CookiesContainer);
+            JObject jb = (JObject)JsonConvert.DeserializeObject(str);
+            return jb?["data"].Value<bool>("refresh") ?? false;
+        }
+
+        public void RefreshCookie()
+        {
+
+        }
+
+        public string GenerateCorrespondPath()
+        {
+            var timestamp = TimestampHandler.GetTimeStampMS(DateTime.Now);
+            return RSA_OAEP($"refresh_{timestamp}", BILI_COOKIES_REFRESH_KEY);
+        }
+
+        public string GetRefreshCrsf(string cpath)
+        {
+            var uri = $"https://www.bilibili.com/correspond/1/{cpath}";
+            var str = BiliSession._get_with_cookies(uri, CookiesContainer);
+            var match = Regex.Match(str, "<div id=\"1-name\">([0-9a-zA-Z]+)<\\/div>");
+            return match.Groups[1].Value;
+        }
+
+        private string RSA_OAEP(string str,string pemkey)
+        {
+            string pemPublicKey = "你的PEM格式公钥";
+            string dataToEncrypt = "需要加密的字符串";
+
+            // 将PEM格式的公钥转换为XML格式
+            string xmlPublicKey = ConvertPemToXml(pemPublicKey);
+
+            // 创建RSACryptoServiceProvider实例并加载公钥
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            rsa.FromXmlString(xmlPublicKey);
+
+            // 将数据转换为字节数组并加密
+            byte[] dataBytes = Encoding.UTF8.GetBytes(dataToEncrypt);
+            byte[] encryptedData = rsa.Encrypt(dataBytes, RSAEncryptionPadding.OaepSHA1);
+
+            // 将加密后的数据转换为Base64字符串
+            return Convert.ToBase64String(encryptedData).ToLower();
+        }
+
+        private static string ConvertPemToXml(string pemPublicKey)
+        {
+            PemReader pemReader = new PemReader(new StringReader(pemPublicKey));
+            AsymmetricCipherKeyPair keyPair = (AsymmetricCipherKeyPair)pemReader.ReadObject();
+            RSAParameters rsaParams = DotNetUtilities.ToRSAParameters((RsaKeyParameters)keyPair.Public);
+
+            RSACryptoServiceProvider rsaCsp = new RSACryptoServiceProvider();
+            rsaCsp.ImportParameters(rsaParams);
+
+            return rsaCsp.ToXmlString(false); // false to get only the public key
         }
 
         public CookieCollection GetLoginCookies()
