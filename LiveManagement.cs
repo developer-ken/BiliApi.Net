@@ -20,12 +20,12 @@ namespace BiliApi
         }
 
         [Obsolete("B站官方已停用禁言时长功能，所有封禁将是永久的", false)]
-        public bool banUID(int uid, int len)
+        public bool banUID(long uid, int len)
         {
             return banUID(uid);
         }
 
-        public bool banUID(int uid)
+        public bool banUID(long uid)
         {
             string result = sess.banUIDfromroom(blr.roomid, uid);
             JObject jb = (JObject)JsonConvert.DeserializeObject(result);
@@ -79,9 +79,9 @@ namespace BiliApi
                             message = jt.Value<string>("msg"),
                             messagetime = msgt
                         },
-                        uid = jt.Value<int>("uid"),
-                        id = jt.Value<int>("id"),
-                        op = jt.Value<int>("adminid"),
+                        uid = jt.Value<long>("uid"),
+                        id = jt.Value<long>("id"),
+                        op = jt.Value<long>("adminid"),
                         optime = ctime,
                         endtime = be,
                         len = (int)(be - ctime).TotalHours,
