@@ -76,13 +76,34 @@ namespace BiliApi.Auth
 
         public QRLogin(string serilizedJson)
         {
-            JArray ja = JArray.Parse(serilizedJson);
-            Cookies = new CookieCollection();
-            foreach (JObject jb in ja)
+            try
             {
-                Cookies.Add(new Cookie(
-                    jb.Value<string>("k"), jb.Value<string>("v"), jb.Value<string>("p"), jb.Value<string>("d")
-                    ));
+                JArray ja = JArray.Parse(serilizedJson);
+                Cookies = new CookieCollection();
+                foreach (JObject jb in ja)
+                {
+                    Cookies.Add(new Cookie(
+                        jb.Value<string>("k"), jb.Value<string>("v"), jb.Value<string>("p"), jb.Value<string>("d")
+                        ));
+                }
+            }
+            catch
+            {
+                //无法解析json，尝试解析为cookiestring
+                Cookies = new CookieCollection();
+                if (serilizedJson.Length > 0)
+                {
+                    serilizedJson = serilizedJson.Replace(" ", "");
+                    var items = serilizedJson.Split(';');
+                    foreach (var item in items)
+                    {
+                        var kv = item.Split('=');
+                        if (kv.Length == 2)
+                        {
+                            Cookies.Add(new Cookie(kv[0], kv[1], "/", ".bilibili.com"));
+                        }
+                    }
+                }
             }
             LoggedIn = IsOnline();
         }

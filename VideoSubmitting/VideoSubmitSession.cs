@@ -168,13 +168,13 @@ namespace BiliApi.VideoSubmitting
             }
         }
 
-        public async Task<string> GetRecommendedTags(string title, int typeid = 21, string desc = "")
+        public async Task<string> GetRecommendedTags(string title, int count = 5, int typeid = 21, string desc = "")
         {
             string lk = $"https://member.bilibili.com/x/vupre/web/archive/tags?typeid={typeid}&title={Uri.EscapeDataString(title)}&filename={Uri.EscapeDataString(Path.GetFileName(vpath))}&desc={Uri.EscapeDataString(desc)}&cover=&groupid=0&vfea=";
             var result = await client.GetAsync(lk);
             var str = await result.Content.ReadAsStringAsync();
             JObject doc = JObject.Parse(str);
-            string tags = string.Join(",", doc["data"].Take(5).Select(x => x["tag"].ToString()));
+            string tags = string.Join(",", doc["data"].Take(count).Select(x => x["tag"].ToString()));
             return tags;
         }
     }

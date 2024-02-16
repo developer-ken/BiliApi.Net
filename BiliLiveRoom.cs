@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 
 namespace BiliApi
 {
@@ -91,7 +92,7 @@ namespace BiliApi
             {
                 while ((DateTime.Now - lastsend_dmk).TotalSeconds < 3)
                 {
-                    ;
+                    Thread.Sleep(0);
                 }
             }
             lastsend_dmk = DateTime.Now;
