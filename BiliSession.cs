@@ -23,13 +23,23 @@ namespace BiliApi
         {
             CookieContext = c;
         }
+
         public struct ResultWithCookie
         {
             public string Result;
             public CookieCollection Cookies;
         }
 
-        public CookieCollection CookieContext { private set; get; }
+        public CookieCollection CookieContext
+        {
+            set
+            {
+                CookieContainer = ToContainer(value);
+            }
+            get => CookieContainer.GetCookies(new Uri("https://bilibili.com"));
+        }
+
+        public CookieContainer CookieContainer { private set; get; }
 
         public string GetCookieString()
         {
@@ -57,7 +67,7 @@ namespace BiliApi
             return retString;
         }
 
-        public static string PostFile(string url, string refernorigin, byte[] filecontent, string filefieldname, string filetype, string filename, Dictionary<string, string> PostInfo = null, CookieCollection cookies = null)
+        public static string PostFile(string url, string refernorigin, byte[] filecontent, string filefieldname, string filetype, string filename, Dictionary<string, string> PostInfo = null, CookieContainer cookies = null)
         {
             //上传文件以及相关参数
             //POST请求分隔符，可任意定制
@@ -96,7 +106,7 @@ namespace BiliApi
             //request.Proxy = new WebProxy("http://127.0.0.1:8888", false) ;
             request.Method = "POST";
             request.Timeout = 20000;
-            request.CookieContainer = ToContainer(cookies);
+            request.CookieContainer = cookies;
             request.Referer = refernorigin;
             request.Headers.Add("origin", refernorigin);
             //这里确定了分隔符是什么
@@ -123,9 +133,14 @@ namespace BiliApi
             return retString;
         }
 
+        public static string PostFile(string url, string refernorigin, byte[] filecontent, string filefieldname, string filetype, string filename, Dictionary<string, string> PostInfo = null, CookieCollection cookies = null)
+        {
+            return PostFile(url, refernorigin, filecontent, filefieldname, filetype, filename, PostInfo, ToContainer(cookies));
+        }
+
         public string PostFile(string url, string refernorigin, byte[] filecontent, string filefieldname, string filetype, string filename, Dictionary<string, string> PostInfo = null)
         {
-            return PostFile(url, refernorigin, filecontent, filefieldname, filetype, filename, PostInfo, CookieContext);
+            return PostFile(url, refernorigin, filecontent, filefieldname, filetype, filename, PostInfo, CookieContainer);
         }
 
         public static ResultWithCookie _post_cookies(string url, Dictionary<string, string> form_data = null)
@@ -183,14 +198,14 @@ namespace BiliApi
             };
         }
 
-        public static string _get_with_cookies_gzip(string url, CookieCollection cookies)
+        public static string _get_with_cookies_gzip(string url, CookieContainer cookies)
         {
             string retString;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
             request.ContentType = "application/json";
-            request.CookieContainer = ToContainer(cookies);
+            request.CookieContainer = cookies;
             request.UserAgent = USER_AGENT;
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream myResponseStream = response.GetResponseStream();
@@ -201,7 +216,9 @@ namespace BiliApi
             return retString;
         }
 
-        public static string _get_with_cookies(string url, CookieCollection cookies)
+        public static string _get_with_cookies_gzip(string url, CookieCollection cookies) => _get_with_cookies_gzip(url, ToContainer(cookies));
+
+        public static string _get_with_cookies(string url, CookieContainer cookies)
         {
             string retString;
 
@@ -209,7 +226,7 @@ namespace BiliApi
             request.Method = "GET";
             request.ContentType = "application/json";
             request.UserAgent = USER_AGENT;
-            request.CookieContainer = ToContainer(cookies);
+            request.CookieContainer = cookies;
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream myResponseStream = response.GetResponseStream();
             StreamReader streamReader = new StreamReader(myResponseStream);
@@ -219,7 +236,9 @@ namespace BiliApi
             return retString;
         }
 
-        public static string _get_with_cookies_and_refer(string url, string refer, CookieCollection cookies)
+        public static string _get_with_cookies(string url, CookieCollection cookies) => _get_with_cookies(url, ToContainer(cookies));
+
+        public static string _get_with_cookies_and_refer(string url, string refer, CookieContainer cookies)
         {
             string retString;
 
@@ -228,7 +247,7 @@ namespace BiliApi
             request.ContentType = "application/json";
             request.Referer = refer;
             request.UserAgent = USER_AGENT;
-            request.CookieContainer = ToContainer(cookies);
+            request.CookieContainer = cookies;
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream myResponseStream = response.GetResponseStream();
             StreamReader streamReader = new StreamReader(myResponseStream);
@@ -238,7 +257,10 @@ namespace BiliApi
             return retString;
         }
 
-        public static string _post_with_cookies_and_refer(string url, Dictionary<string, string> form_data, string refer, CookieCollection cookies)
+        public static string _get_with_cookies_and_refer(string url, string refer, CookieCollection cookies) =>
+            _get_with_cookies_and_refer(url, refer, ToContainer(cookies));
+
+        public static string _post_with_cookies_and_refer(string url, Dictionary<string, string> form_data, string refer, CookieContainer cookies)
         {
             string retString = "";
             foreach (KeyValuePair<string, string> fd in form_data)
@@ -251,7 +273,7 @@ namespace BiliApi
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
-            request.CookieContainer = ToContainer(cookies);
+            request.CookieContainer = cookies;
             request.UserAgent = USER_AGENT;
             request.Referer = refer;
             request.ContentLength = bs.Length;
@@ -268,8 +290,10 @@ namespace BiliApi
             return retString;
         }
 
+        public static string _post_with_cookies_and_refer(string url, Dictionary<string, string> form_data, string refer, CookieCollection cookies) =>
+            _post_with_cookies_and_refer(url, form_data, refer, ToContainer(cookies));
 
-        public static string _post_with_cookies(string url, Dictionary<string, string> form_data, CookieCollection cookies)
+        public static string _post_with_cookies(string url, Dictionary<string, string> form_data, CookieContainer cookies)
         {
             string retString = "";
             foreach (KeyValuePair<string, string> fd in form_data)
@@ -282,7 +306,7 @@ namespace BiliApi
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
-            request.CookieContainer = ToContainer(cookies);
+            request.CookieContainer = cookies;
             request.ContentLength = bs.Length;
             request.UserAgent = USER_AGENT;
             //提交请求数据
@@ -297,50 +321,53 @@ namespace BiliApi
             myResponseStream.Close();
             return retString;
         }
+
+        public static string _post_with_cookies(string url, Dictionary<string, string> form_data, CookieCollection cookies) =>
+            _post_with_cookies(url, form_data, ToContainer(cookies));
 
         public string _get_with_cookies_and_refer(string url, string refer)
         {
-            return _get_with_cookies_and_refer(url, refer, CookieContext);
+            return _get_with_cookies_and_refer(url, refer, CookieContainer);
         }
 
         public string _post_with_cookies(string url, Dictionary<string, string> form_data)
         {
-            return _post_with_cookies(url, form_data, CookieContext);
+            return _post_with_cookies(url, form_data, CookieContainer);
         }
 
         public string _post_with_cookies_and_refer(string url, string refer, Dictionary<string, string> form_data)
         {
-            return _post_with_cookies_and_refer(url, form_data, refer, CookieContext);
+            return _post_with_cookies_and_refer(url, form_data, refer, CookieContainer);
         }
 
         public string _get_with_cookies(string url)
         {
-            return _get_with_cookies(url, CookieContext);
+            return _get_with_cookies(url, CookieContainer);
         }
 
         public string _get_with_cookies_gzip(string url)
         {
-            return _get_with_cookies_gzip(url, CookieContext);
+            return _get_with_cookies_gzip(url, CookieContainer);
         }
 
         public string _get_with_manacookies_and_refer(string url, string refer)
         {
-            return _get_with_cookies_and_refer(url, refer, CookieContext);
+            return _get_with_cookies_and_refer(url, refer, CookieContainer);
         }
 
         public string _post_with_manacookies(string url, Dictionary<string, string> form_data)
         {
-            return _post_with_cookies(url, form_data, CookieContext);
+            return _post_with_cookies(url, form_data, CookieContainer);
         }
 
         public string _post_with_manacookies_and_refer(string url, string refer, Dictionary<string, string> form_data)
         {
-            return _post_with_cookies_and_refer(url, form_data, refer, CookieContext);
+            return _post_with_cookies_and_refer(url, form_data, refer, CookieContainer);
         }
 
         public string _get_with_manacookies(string url)
         {
-            return _get_with_cookies(url, CookieContext);
+            return _get_with_cookies(url, CookieContainer);
         }
 
         public static CookieContainer ToContainer(CookieCollection cookies)
@@ -351,6 +378,11 @@ namespace BiliApi
                 ck.Add(c);
             }
             return ck;
+        }
+
+        public static void UpdateCookieCollection(out CookieCollection collection, CookieContainer container)
+        {
+            collection = container.GetCookies(new Uri("https://bilibili.com"));
         }
 
         public string GetCsrf()
