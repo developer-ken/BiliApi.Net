@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -507,7 +508,7 @@ namespace BiliApi
         public string getBiliUserDynamicJson(long uid)
         {
             string url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid=" + uid + "&offset_dynamic_id=0&need_top=1";
-            return _get(url);
+            return _get_with_cookies(url);
         }
 
         public string getBiliVideoStaticsJson(long aid)
@@ -610,6 +611,20 @@ namespace BiliApi
         {
             string url = "https://api.live.bilibili.com/xlive/web-ucenter/user/MedalWall?target_id=" + uid;
             return _get_with_manacookies_and_refer(url, "https://space.bilibili.com/" + uid);
+        }
+
+        public string sendComment(long oid, string text,int type = 1)
+        {
+            string url = $"https://api.bilibili.com/x/v2/reply/add";
+            return _post_with_cookies(url,
+                new Dictionary<string, string> {
+                    { "type", type.ToString() },
+                    { "oid", oid.ToString() },
+                    //{ "root", oid.ToString() },
+                    //{ "parent", oid.ToString() },
+                    { "message", text },
+                    { "csrf", CookieContext["bili_jct"].Value },
+                });
         }
 
         //public static 

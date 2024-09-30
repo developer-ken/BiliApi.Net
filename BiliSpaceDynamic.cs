@@ -15,18 +15,18 @@ namespace BiliApi
     /// </summary>
     public class BiliSpaceDynamic
     {
-        private readonly int uid = -1;
+        private readonly long uid = -1;
         private List<Dyncard> dyns = new List<Dyncard>();
         private readonly List<long> checked_ids = new List<long>();
         private BiliSession sess;
 
-        public BiliSpaceDynamic(int uid, BiliSession sess)
+        public BiliSpaceDynamic(long uid, BiliSession sess)
         {
             this.sess = sess;
             this.uid = uid;
         }
 
-        public BiliSpaceDynamic(int uid, IAuthBase auth)
+        public BiliSpaceDynamic(long uid, IAuthBase auth)
         {
             this.sess = new BiliSession(auth.GetLoginCookies());
             this.uid = uid;
@@ -94,7 +94,7 @@ namespace BiliApi
                         };
                         if (j["desc"]["user_profile"]["info"]["uname"] != null)//如果给了更多信息，就直接用上
                         {
-                            dyn.sender = new BiliUser(j["desc"]["user_profile"]["info"].Value<int>("uid"),
+                            dyn.sender = new BiliUser(j["desc"]["user_profile"]["info"].Value<long>("uid"),
                                 j["desc"]["user_profile"]["info"].Value<string>("uname"),
                                 "未知",
                                 j["desc"]["user_profile"].Value<string>("sign"),
@@ -107,15 +107,15 @@ namespace BiliApi
                                 sess);
                         }
                         else//如果没有信息就从缓存抓取
-                        if (BiliUser.userlist.ContainsKey(j["desc"]["user_profile"]["info"].Value<int>("uid")))
+                        if (BiliUser.userlist.ContainsKey(j["desc"]["user_profile"]["info"].Value<long>("uid")))
                         {
-                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<int>("uid"), sess);
+                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<long>("uid"), sess);
                             //使用用户数据缓存来提高速度
                             //因为监听的是同一个账号，所以缓存命中率超高
                         }
                         else//如果缓存未命中，就拿获得的UID抓取剩余信息
                         {
-                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<int>("uid"), sess);
+                            dyn.sender = BiliUser.getUser(j["desc"]["user_profile"]["info"].Value<long>("uid"), sess);
                         }
 
                         if (j["desc"]["orig_type"] != null)
@@ -171,7 +171,7 @@ namespace BiliApi
                                     dyn.vinfo.short_discription = dyn.vinfo.discription;
                                 }
 
-                                dyn.vinfo.av = j["desc"].Value<int>("rid");
+                                dyn.vinfo.av = j["desc"].Value<long>("rid");
                                 dyn.dynamic = card.Value<string>("dynamic");
                                 break;
                             default:
@@ -236,7 +236,7 @@ namespace BiliApi
                 dyn.Add(
                         new ShareCard
                         {
-                            Uid = j["desc"].Value<int>("uid"),
+                            Uid = j["desc"].Value<long>("uid"),
                             UName = j["desc"]["user_profile"]["info"].Value<string>("uname"),
                             UFace = j["desc"]["user_profile"]["info"].Value<string>("face"),
                             Content = GetShareTextContent(j.Value<string>("card"))
@@ -265,7 +265,7 @@ namespace BiliApi
                 dyn.Add(
                         new ShareCard
                         {
-                            Uid = j["desc"].Value<int>("uid"),
+                            Uid = j["desc"].Value<long>("uid"),
                             UName = j["desc"]["user_profile"]["info"].Value<string>("uname"),
                             UFace = j["desc"]["user_profile"]["info"].Value<string>("face"),
                             Content = GetShareTextContent(j.Value<string>("card"))
@@ -321,7 +321,7 @@ namespace BiliApi
 
     public struct ShareCard
     {
-        public int Uid;
+        public long Uid;
         public string UName;
         public string UFace;
         public string Content;
@@ -333,7 +333,7 @@ namespace BiliApi
         public string short_discription;
         public string bvid;
         public string title;
-        public int av;
+        public long av;
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -350,7 +350,7 @@ namespace BiliApi
         }
         public override int GetHashCode()
         {
-            return av;
+            return av.GetHashCode();
         }
     }
 }
