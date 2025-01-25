@@ -211,12 +211,20 @@ namespace BiliApi.BiliPrivMessage
         public bool SendImage(Bitmap bmap)
         {
             //上传图片
-            MemoryStream ms = new MemoryStream();
-            bmap.Save(ms, ImageFormat.Png);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                bmap.Save(ms, ImageFormat.Png);
+                return SendImage(ms.ToArray());
+            }
+        }
+
+        public bool SendImage(byte[] bmap)
+        {
+            //上传图片
             var upload = sess.PostFile(
                 "https://api.vc.bilibili.com/api/v1/drawImage/upload",
                 "https://message.bilibili.com",
-                ms.ToArray(),
+                bmap,
                 "file_up",
                 "image/png",
                 "picturen.png",
@@ -237,7 +245,7 @@ namespace BiliApi.BiliPrivMessage
             payload.Add("height", jb["data"]["image_height"]);
             payload.Add("imageType", "png");
             payload.Add("original", "1");
-            payload.Add("size", ms.ToArray().Length / 1024);
+            payload.Add("size", bmap.Length / 1024);
             return sendMessage(payload);
         }
 
