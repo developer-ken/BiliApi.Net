@@ -7,6 +7,7 @@ using System.Text;
 using BiliApi.Exceptions;
 using System.Threading;
 using System.Drawing;
+using Microsoft.Playwright;
 
 namespace BiliApi.Auth
 {
@@ -17,10 +18,12 @@ namespace BiliApi.Auth
     {
         const string URL_GETKEY = "https://passport.bilibili.com/x/passport-login/web/qrcode/generate";
         const string URL_STATUS = "https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=";
-
+        FakeBrowser fb = new FakeBrowser();
         public CookieCollection Cookies { get; private set; }
         public LoginQRCode QRToken { private set; get; }
         public bool LoggedIn { get; private set; }
+
+        public bool UseFakeBrowser { get; private set; }
 
         public struct LoginQRCode
         {
@@ -50,7 +53,7 @@ namespace BiliApi.Auth
         public string Serilize()
         {
             JArray jb = new JArray();
-            foreach (Cookie c in Cookies)
+            foreach (System.Net.Cookie c in Cookies)
             {
                 JObject j = new JObject();
                 j.Add("k", c.Name);
@@ -62,10 +65,11 @@ namespace BiliApi.Auth
             return jb.ToString();
         }
 
-        public QRLogin()
+        public QRLogin(bool fake_browser = true)
         {
             QRToken = GetNewQRItem();
             LoggedIn = false;
+            UseFakeBrowser = fake_browser;
         }
 
         public QRLogin(LoginQRCode code)
@@ -80,7 +84,7 @@ namespace BiliApi.Auth
             Cookies = new CookieCollection();
             foreach (JObject jb in ja)
             {
-                Cookies.Add(new Cookie(
+                Cookies.Add(new System.Net.Cookie(
                     jb.Value<string>("k"), jb.Value<string>("v"), jb.Value<string>("p"), jb.Value<string>("d")
                     ));
             }
@@ -168,7 +172,17 @@ namespace BiliApi.Auth
                         return QRState.Expired;
                     case 0:
                         {
-                            Cookies = res.Cookies;
+                            if (UseFakeBrowser)
+                            {
+                                fb.InitAsync().Wait();
+                                fb.AddContextCookies(res.Cookies).Wait();
+                                fb.GetPageAsync("https://bilibili.com").Wait();
+                                Cookies = fb.GetContextCookies().Result;
+                            }
+                            else
+                            {
+                                Cookies = res.Cookies;
+                            }
                             LoggedIn = IsOnline();
                             if (!LoggedIn) throw new AuthenticateFailedException(jb);
                             return QRState.LoggedIn;
